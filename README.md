@@ -444,10 +444,11 @@ sha256:58eea85c...
 
 The SHA-256 digest is authoritative. A Git commit, HTTP ETag, or branch name is provenance, not the cross-transport version identity.
 
-The optional `engine` field pins the exact public npm version used to produce
-the plan and lock. Knitto refuses to operate with a different version and
-prints the corresponding `npx knitto@<version>` command. Newly initialized
-projects include this pin; older configurations without it remain supported.
+The optional `engine` field declares the minimum compatible public npm version.
+Knitto accepts a running engine at or above that version within the same major
+release line. Generated locks record the exact engine version that produced
+them. Newly initialized projects include the current minimum; older
+configurations without it remain supported.
 
 ### Opt-in template releases
 
@@ -488,10 +489,10 @@ npx knitto@1.0.0 apply ./project --update
 ```
 
 `source pin` validates that the selected revision declares the requested tag
-and updates the consumer's engine pin to the version required by that template.
-The second command must use that newly pinned engine version. Templates that do
-not declare `release`, and templates still bootstrapping at `0.0.0`, do not
-require a release tag.
+and updates the consumer's minimum engine version to the version required by
+that template. The second command may use that version or a newer compatible
+engine within the same major line. Templates that do not declare `release`, and
+templates still bootstrapping at `0.0.0`, do not require a release tag.
 
 Attach an existing project to a template without applying its files:
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  isEngineCompatible,
   validateProjectConfig,
   validateTemplateManifest,
 } from "../src/config.js";
@@ -23,7 +24,7 @@ test("release and engine pins remain optional", () => {
   );
 });
 
-test("project configuration requires its exact Knitto engine", () => {
+test("project configuration requires a compatible Knitto engine", () => {
   assert.deepEqual(
     validateProjectConfig({
       source: { type: "local", path: ".knitto" },
@@ -40,6 +41,18 @@ test("project configuration requires its exact Knitto engine", () => {
       }),
     /run with npx knitto@99\.0\.0/,
   );
+
+  assert.deepEqual(
+    validateProjectConfig({
+      source: { type: "local", path: ".knitto" },
+      engine: { package: KNITTO_PACKAGE, version: "0.0.1" },
+    }).engine,
+    { package: KNITTO_PACKAGE, version: "0.0.1" },
+  );
+
+  assert.equal(isEngineCompatible("0.0.1", "0.1.0"), true);
+  assert.equal(isEngineCompatible("0.2.0", "0.1.0"), false);
+  assert.equal(isEngineCompatible("0.1.0", "1.0.0"), false);
 
   assert.deepEqual(
     validateProjectConfig(
@@ -66,30 +79,30 @@ test("template releases support template-defined tag formats", () => {
     rules: [],
   });
 
-  test("release bootstrap metadata does not require a nonexistent tag", () => {
-    assert.equal(
-      templateReleaseTag({
-        provider: "release-please",
-        version: UNRELEASED_TEMPLATE_VERSION,
-        tagFormat: "v{version}",
-      }),
-      undefined,
-    );
-    assert.equal(
-      templateReleaseTag({
-        provider: "release-please",
-        version: "1.2.3",
-        tagFormat: "v{version}",
-      }),
-      "v1.2.3",
-    );
-  });
-
   assert.deepEqual(manifest.release, {
     provider: "release-please",
     version: "2.3.0",
     tagFormat: "policy-v{version}",
   });
+});
+
+test("release bootstrap metadata does not require a nonexistent tag", () => {
+  assert.equal(
+    templateReleaseTag({
+      provider: "release-please",
+      version: UNRELEASED_TEMPLATE_VERSION,
+      tagFormat: "v{version}",
+    }),
+    undefined,
+  );
+  assert.equal(
+    templateReleaseTag({
+      provider: "release-please",
+      version: "1.2.3",
+      tagFormat: "v{version}",
+    }),
+    "v1.2.3",
+  );
 });
 
 test("new locks record the executing Knitto engine", () => {

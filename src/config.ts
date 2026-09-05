@@ -14,7 +14,21 @@ import {
 } from "./types.js";
 import { KnittoError } from "./errors.js";
 import { KNITTO_PACKAGE, KNITTO_VERSION } from "./version.js";
-import { valid } from "semver";
+import { gte, parse, valid } from "semver";
+
+export function isEngineCompatible(
+  requiredVersion: string,
+  runningVersion = KNITTO_VERSION,
+): boolean {
+  const required = parse(requiredVersion);
+  const running = parse(runningVersion);
+  return Boolean(
+    required &&
+      running &&
+      running.major === required.major &&
+      gte(running, required),
+  );
+}
 
 async function readJson(file: string, kind: string): Promise<unknown> {
   let contents: string;
@@ -221,16 +235,16 @@ export function validateProjectConfig(
       valid(value.engine.version) === null
     ) {
       throw new KnittoError(
-        "Project engine must specify an exact knitto semantic version",
+        "Project engine must specify a minimum knitto semantic version",
         "CONFIG",
       );
     }
     if (
       options.enforceEngine !== false &&
-      value.engine.version !== KNITTO_VERSION
+      !isEngineCompatible(value.engine.version)
     ) {
       throw new KnittoError(
-        `Project requires ${KNITTO_PACKAGE}@${value.engine.version}, but this is ${KNITTO_PACKAGE}@${KNITTO_VERSION}; run with npx ${KNITTO_PACKAGE}@${value.engine.version}`,
+        `Project requires ${KNITTO_PACKAGE}@${value.engine.version} or newer within major version ${parse(value.engine.version)?.major}, but this is ${KNITTO_PACKAGE}@${KNITTO_VERSION}; run with npx ${KNITTO_PACKAGE}@${value.engine.version}`,
         "CONFIG",
       );
     }
@@ -472,7 +486,7 @@ export function validateTemplateManifest(value: unknown): TemplateManifest {
       valid(value.engine.version) === null
     ) {
       throw new KnittoError(
-        "Template engine must specify an exact knitto semantic version",
+        "Template engine must specify a minimum knitto semantic version",
         "TEMPLATE",
       );
     }

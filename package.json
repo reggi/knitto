@@ -1,6 +1,6 @@
 {
   "name": "knitto",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Unix-first, template-aware filesystem reconciler",
   "type": "module",
   "packageManager": "npm@12.0.2",

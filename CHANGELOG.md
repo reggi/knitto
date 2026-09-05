@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/reggi/knitto/compare/v0.2.0...v0.3.0) (2026-09-05)
+
+
+### Features
+
+* prefer embedded template sources ([705a833](https://github.com/reggi/knitto/commit/705a83315502625f2c3bf3ce5ecc336e36004f63))
+
 ## [0.2.0](https://github.com/reggi/knitto/compare/v0.1.0...v0.2.0) (2026-09-05)
 
 

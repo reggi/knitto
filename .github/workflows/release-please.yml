@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      publish_ref:
+        description: Existing release tag to stage on npm
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -16,19 +21,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create or update release
+        if: inputs.publish_ref == ''
         id: release
         uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
 
       - name: Check out released source
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.release.outputs.tag_name }}
+          ref: ${{ inputs.publish_ref || steps.release.outputs.tag_name }}
 
       - name: Set up Node.js for npm
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
         uses: actions/setup-node@v4
         with:
           node-version: "22.22.2"
@@ -36,17 +42,17 @@ jobs:
           cache: npm
 
       - name: Use npm 12
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
         run: npm install --global npm@12.0.2
 
       - name: Build package
-        if: steps.release.outputs.release_created == 'true'
+        if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
         run: |
           npm ci
           npm run build
 
-      - name: Publish package
-        if: steps.release.outputs.release_created == 'true'
+      - name: Stage package on npm
+        if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm stage publish --provenance

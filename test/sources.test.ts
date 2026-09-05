@@ -100,3 +100,31 @@ test("Git sources resolve to the same snapshot as their working tree", async () 
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("an embedded .knitto directory shadows the configured source", async () => {
+  const root = await temporaryDirectory("knitto-embedded-source-test-");
+  const embedded = path.join(root, ".knitto");
+
+  try {
+    await mkdir(embedded);
+    await createTemplate(embedded);
+
+    const snapshot = await resolveCurrentSnapshot(
+      {
+        type: "git",
+        url: path.join(root, "missing-remote"),
+        path: ".knitto",
+        ref: "v1.0.0",
+      },
+      root,
+    );
+
+    assert.equal(snapshot.manifest.name, "source-test");
+    assert.deepEqual(snapshot.provenance, {
+      sourceType: "local",
+      locator: ".knitto",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

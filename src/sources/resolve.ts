@@ -41,6 +41,25 @@ interface MaterializedSource {
   cleanup?: () => Promise<void>;
 }
 
+async function embeddedTemplateSource(
+  projectRoot: string,
+): Promise<Extract<SourceConfig, { type: "local" }> | null> {
+  const directory = path.join(projectRoot, ".knitto");
+  try {
+    const metadata = await stat(directory);
+    return metadata.isDirectory() ? { type: "local", path: ".knitto" } : null;
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return null;
+    }
+    throw new KnittoError(
+      `Unable to inspect embedded template directory: ${directory}`,
+      "SOURCE",
+      { cause: error },
+    );
+  }
+}
+
 async function materializeLocal(
   source: Extract<SourceConfig, { type: "local" }>,
   projectRoot: string,
@@ -229,7 +248,10 @@ export async function resolveCurrentSnapshot(
   source: SourceConfig,
   projectRoot: string,
 ): Promise<Snapshot> {
-  return snapshotMaterialized(await materialize(source, projectRoot));
+  const embedded = await embeddedTemplateSource(projectRoot);
+  return snapshotMaterialized(
+    await materialize(embedded ?? source, projectRoot),
+  );
 }
 
 export async function resolveLockedSnapshot(

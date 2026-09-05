@@ -561,6 +561,8 @@ Locked checks can therefore remain reproducible and work from cache after initia
 
 ## Source Types
 
+When a project contains a `.knitto` directory, Knitto uses that embedded local template for current source resolution before consulting `.knitto.json`. This lets a template repository dogfood unpublished changes and lets generated repositories begin with an inspectable embedded template. After the embedded directory is removed, the configured source becomes active without changing `.knitto.json`.
+
 ### Local directory
 
 ```json

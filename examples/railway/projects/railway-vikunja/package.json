@@ -1,0 +1,20 @@
+{
+  "name": "railway-vikunja",
+  "private": true,
+  "type": "module",
+  "templateVersion": "legacy",
+  "standard": true,
+  "scripts": {
+    "format": "legacy formatter",
+    "template-copy": "legacy copy",
+    "lint:fix": "legacy lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://example.invalid/old",
+    "directory": "legacy"
+  },
+  "devDependencies": {
+    "railway": "3.11.0"
+  }
+}

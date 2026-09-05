@@ -1,0 +1,16 @@
+{
+  "source": {
+    "type": "local",
+    "path": "../../template"
+  },
+  "metadata": {
+    "url": "https://github.com/reggi/railway-plausible",
+    "issuesUrl": "https://github.com/reggi/railway-plausible/issues",
+    "year": 2026
+  },
+  "overrides": {
+    "package-metadata": {
+      "/homepage": "https://plausible.io/"
+    }
+  }
+}

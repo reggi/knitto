@@ -1,0 +1,28 @@
+{
+  "name": {{json metadata.name}},
+  "description": {{json metadata.description}},
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "package:check": "sort-package-json package.json --check",
+    "railway:apply": "railway config apply",
+    "railway:plan": "railway config plan",
+    "test": "npm run test:quality",
+    "test:quality": "npm run format:check && npm run package:check && npm run typecheck",
+    "typecheck": "tsc --noEmit"
+  },
+  "prettier": "@github/prettier-config",
+  "devDependencies": {
+    "@github/prettier-config": "0.0.6",
+    "@types/node": "26.4.1",
+    "prettier": "3.9.6",
+    "railway": "3.11.0",
+    "sort-package-json": "4.0.0",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

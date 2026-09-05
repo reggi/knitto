@@ -1,0 +1,29 @@
+{
+  "name": "plausible-analytics-railway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "railway:plan": "railway config plan",
+    "railway:apply": "railway config apply",
+    "format": "legacy formatter",
+    "template-copy": "legacy copy",
+    "lint:fix": "legacy lint"
+  },
+  "templateVersion": "legacy",
+  "standard": true,
+  "repository": {
+    "type": "git",
+    "url": "https://example.invalid/old",
+    "directory": "legacy"
+  },
+  "dependencies": {
+    "railway": "3.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.3.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

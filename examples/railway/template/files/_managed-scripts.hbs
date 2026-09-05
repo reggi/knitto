@@ -1,0 +1,5 @@
+"lint": {{#if eslint}}"eslint ."{{else}}"echo linting disabled"{{/if}},
+"lintfix": {{#if eslint}}"eslint . --fix"{{else}}{{remove}}{{/if}},
+"format": {{#if prettier}}"prettier . --check"{{else}}{{remove}}{{/if}},
+"template-copy": {{remove}},
+"lint:fix": {{remove}}

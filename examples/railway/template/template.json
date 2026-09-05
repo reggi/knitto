@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "name": "railway-node-service",
+  "inputs": [
+    "package.json"
+  ],
+  "variables": {
+    "license": "MIT",
+    "copyrightHolder": "Project contributors",
+    "author": "Repository contributors",
+    "eslint": true,
+    "prettier": false
+  },
+  "partials": {
+    "managedScripts": "files/_managed-scripts.hbs"
+  },
+  "rules": [
+    {
+      "id": "package-metadata",
+      "type": "content",
+      "parser": "package-json",
+      "template": "files/package.managed.json.hbs",
+      "destination": "package.json",
+      "exact": [
+        "/repository",
+        "/bugs"
+      ]
+    },
+    {
+      "id": "license",
+      "type": "file",
+      "template": "files/LICENSE.hbs",
+      "destination": "LICENSE"
+    }
+  ],
+  "checks": [
+    {
+      "id": "vikunja-railway-version",
+      "type": "required-packages",
+      "scope": "root",
+      "when": "{{eq pkgName \"railway-vikunja\"}}",
+      "packages": {
+        "devDependencies": [
+          "railway@3.11.0"
+        ]
+      }
+    },
+    {
+      "id": "plausible-railway-version",
+      "type": "required-packages",
+      "scope": "root",
+      "when": "{{eq pkgName \"plausible-analytics-railway\"}}",
+      "packages": {
+        "dependencies": [
+          "railway@3.11.0"
+        ]
+      }
+    },
+    {
+      "id": "unwanted-standard",
+      "type": "unwanted-packages",
+      "scope": "all",
+      "packages": [
+        "standard"
+      ]
+    }
+  ]
+}

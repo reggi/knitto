@@ -1,0 +1,26 @@
+{
+  "source": {
+    "type": "local",
+    "path": "../../template"
+  },
+  "metadata": {
+    "url": "https://github.com/reggi/railway-vikunja",
+    "issuesUrl": "https://github.com/reggi/railway-vikunja/issues",
+    "year": 2026
+  },
+  "variables": {
+    "copyrightHolder": "Thomas Reggi"
+  },
+  "exclude": {
+    "pointers": {
+      "package-metadata": [
+        "/homepage"
+      ]
+    }
+  },
+  "overrides": {
+    "package-metadata": {
+      "/scripts/lint": "echo vikunja lint"
+    }
+  }
+}

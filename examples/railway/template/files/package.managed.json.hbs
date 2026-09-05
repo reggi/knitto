@@ -1,0 +1,22 @@
+{
+  "name": {{json files.[package.json].json.name}},
+  "author": {{json author}},
+  "license": {{json variables.license}},
+  "type": {{#if esm}}"module"{{else}}{{remove}}{{/if}},
+  "scripts": {
+    {{> managedScripts}}
+  },
+  "repository": {
+    "type": "git",
+    "url": {{json metadata.url}}
+  },
+  "homepage": {{json metadata.url}},
+  "bugs": {
+    "url": {{json metadata.issuesUrl}}
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "templateVersion": {{remove}},
+  "standard": {{remove}}
+}

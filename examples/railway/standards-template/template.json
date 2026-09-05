@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "name": "railway-iac-standards",
+  "inputs": [
+    ".gitignore",
+    "package.json"
+  ],
+  "prompts": [
+    {
+      "path": "metadata.name",
+      "type": "text",
+      "message": "Package name",
+      "default": "{{project.name}}",
+      "required": true
+    },
+    {
+      "path": "metadata.description",
+      "type": "text",
+      "message": "Project description",
+      "required": true
+    }
+  ],
+  "rules": [
+    {
+      "id": "shared-gitignore",
+      "type": "file",
+      "template": "files/gitignore.hbs",
+      "destination": ".gitignore"
+    },
+    {
+      "id": "package-standards",
+      "type": "content",
+      "parser": "package-json",
+      "template": "files/package.json.hbs",
+      "destination": "package.json",
+      "exact": [
+        ""
+      ]
+    },
+    {
+      "id": "typescript-standards",
+      "type": "file",
+      "template": "files/tsconfig.json.hbs",
+      "destination": "tsconfig.json"
+    },
+    {
+      "id": "remove-github-metadata",
+      "type": "delete",
+      "destination": ".github/**",
+      "glob": true
+    },
+    {
+      "id": "remove-railway-readme",
+      "type": "delete",
+      "destination": ".railway/README.md"
+    }
+  ]
+}

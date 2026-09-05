@@ -6,6 +6,11 @@
 
 Knitto is a Unix-first declarative filesystem reconciler.
 
+```bash
+npx knitto -v
+npx knitto --version
+```
+
 It renders versioned Handlebars templates into a desired directory state,
 compares that state with existing files, presents a reviewable plan, and
 applies changes safely.

@@ -83,10 +83,12 @@ async function successful(
 test("CLI reports the engine version used by the test entrypoint", async () => {
   const root = await temporaryDirectory("knitto-cli-version-");
   try {
-    const result = await successful(
-      knitto(["--version"], { cache: path.join(root, "cache") }),
-    );
-    assert.equal(result.stdout.trim(), KNITTO_VERSION);
+    for (const flag of ["-v", "--version"]) {
+      const result = await successful(
+        knitto([flag], { cache: path.join(root, "cache") }),
+      );
+      assert.equal(result.stdout.trim(), KNITTO_VERSION);
+    }
   } finally {
     await rm(root, { recursive: true, force: true });
   }

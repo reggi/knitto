@@ -264,7 +264,7 @@ const program = new Command();
 program
   .name("knitto")
   .description("Reconcile a project directory with a pinned template snapshot")
-  .version(KNITTO_VERSION);
+  .version(KNITTO_VERSION, "-v, --version", "output the Knitto version");
 
 program
   .command("init-template")

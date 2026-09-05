@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0](https://github.com/reggi/knitto/compare/v0.0.1...v0.1.0) (2026-09-05)
+
+
+### Features
+
+* add template source attachment command ([9920d45](https://github.com/reggi/knitto/commit/9920d45a3913b6e795bb0329749162387077e167))
+
+
+### Bug Fixes
+
+* expose source locator parser to CLI ([ddcd9be](https://github.com/reggi/knitto/commit/ddcd9befc468a8b45408bbae0f97b7087264d6f7))
+
 ## 0.0.1 (2026-09-05)
 
 

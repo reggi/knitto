@@ -202,7 +202,10 @@ export function validateSource(value: unknown): SourceConfig {
   throw new KnittoError(`Unsupported source type: ${value.type}`, "CONFIG");
 }
 
-export function validateProjectConfig(value: unknown): ProjectConfig {
+export function validateProjectConfig(
+  value: unknown,
+  options: { enforceEngine?: boolean } = {},
+): ProjectConfig {
   if (!isRecord(value)) {
     throw new KnittoError("Project configuration must be an object", "CONFIG");
   }
@@ -222,7 +225,10 @@ export function validateProjectConfig(value: unknown): ProjectConfig {
         "CONFIG",
       );
     }
-    if (value.engine.version !== KNITTO_VERSION) {
+    if (
+      options.enforceEngine !== false &&
+      value.engine.version !== KNITTO_VERSION
+    ) {
       throw new KnittoError(
         `Project requires ${KNITTO_PACKAGE}@${value.engine.version}, but this is ${KNITTO_PACKAGE}@${KNITTO_VERSION}; run with npx ${KNITTO_PACKAGE}@${value.engine.version}`,
         "CONFIG",
@@ -634,9 +640,11 @@ export function validateTemplateManifest(value: unknown): TemplateManifest {
 
 export async function loadProjectConfig(
   projectRoot: string,
+  options: { enforceEngine?: boolean } = {},
 ): Promise<ProjectConfig> {
   return validateProjectConfig(
     await readJson(path.join(projectRoot, CONFIG_FILE), "project configuration"),
+    options,
   );
 }
 

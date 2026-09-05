@@ -488,6 +488,18 @@ The second command must use that newly pinned engine version. Templates that do
 not declare `release`, and templates still bootstrapping at `0.0.0`, do not
 require a release tag.
 
+Attach an existing project to a template without applying its files:
+
+```bash
+knitto source set https://github.com/reggi/template-railway
+```
+
+GitHub repository URLs are inferred as Git sources with `.knitto` as the
+default template path. If the template has a published release, Knitto
+automatically selects its immutable tag and required engine. Existing metadata,
+variables, exclusions, and overrides are preserved; a stale lock is removed so
+the next `check`, `plan`, or `apply` resolves the newly selected source.
+
 Snapshots are cached under:
 
 ```text

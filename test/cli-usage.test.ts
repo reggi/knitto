@@ -338,6 +338,65 @@ test("CLI pins and applies an immutable Git template release", async () => {
       version: KNITTO_VERSION,
     });
     assert.match(lock.provenance.revision ?? "", /^[a-f0-9]{40}$/);
+
+    const attachedProject = path.join(root, "attached-project");
+    await mkdir(attachedProject);
+    await writeJson(path.join(attachedProject, ".knitto.json"), {
+      source: {
+        type: "local",
+        path: "./old-template",
+      },
+      engine: {
+        package: KNITTO_PACKAGE,
+        version: "9.9.9",
+      },
+      metadata: {
+        name: "attached-project",
+      },
+    });
+    await writeText(path.join(attachedProject, ".knitto.lock"), "stale\n");
+
+    await successful(
+      knitto(
+        [
+          "source",
+          "set",
+          pathToFileURL(template).href,
+          attachedProject,
+          "--type",
+          "git",
+          "--template-path",
+          ".knitto",
+        ],
+        { cache },
+      ),
+    );
+    const attachedConfig = JSON.parse(
+      await readFile(path.join(attachedProject, ".knitto.json"), "utf8"),
+    ) as {
+      source: { type: string; url: string; path: string; ref: string };
+      engine: { package: string; version: string };
+      metadata: { name: string };
+    };
+    assert.deepEqual(attachedConfig.source, {
+      type: "git",
+      url: pathToFileURL(template).href,
+      path: ".knitto",
+      ref: "policy-v1.0.0",
+    });
+    assert.deepEqual(attachedConfig.engine, {
+      package: KNITTO_PACKAGE,
+      version: KNITTO_VERSION,
+    });
+    assert.deepEqual(attachedConfig.metadata, { name: "attached-project" });
+    await assert.rejects(
+      readFile(path.join(attachedProject, ".knitto.lock")),
+      /ENOENT/,
+    );
+    await assert.rejects(
+      readFile(path.join(attachedProject, "POLICY.md")),
+      /ENOENT/,
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

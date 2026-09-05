@@ -40,6 +40,17 @@ test("project configuration requires its exact Knitto engine", () => {
       }),
     /run with npx knitto@99\.0\.0/,
   );
+
+  assert.deepEqual(
+    validateProjectConfig(
+      {
+        source: { type: "local", path: ".knitto" },
+        engine: { package: KNITTO_PACKAGE, version: "99.0.0" },
+      },
+      { enforceEngine: false },
+    ).engine,
+    { package: KNITTO_PACKAGE, version: "99.0.0" },
+  );
 });
 
 test("template releases support template-defined tag formats", () => {

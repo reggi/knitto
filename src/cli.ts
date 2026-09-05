@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import path from "node:path";
-import { access } from "node:fs/promises";
+import { access, rm } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { Command, InvalidArgumentError } from "commander";
@@ -151,6 +151,40 @@ function configuredSource(options: {
       "--type and --source must be provided together",
       "USAGE",
     );
+  }
+
+  function sourceFromLocator(
+    locator: string,
+    options: {
+      type?: SourceConfig["type"];
+      templatePath?: string;
+      ref?: string;
+    },
+  ): SourceConfig {
+    const type =
+      options.type ??
+      (locator.startsWith("git@") ||
+      locator.startsWith("ssh://") ||
+      locator.endsWith(".git") ||
+      /^https?:\/\/github\.com\//.test(locator)
+        ? "git"
+        : /^https?:\/\//.test(locator)
+          ? "http"
+          : "local");
+    if (type === "local") return { type, path: locator };
+    if (type === "http") {
+      return {
+        type,
+        url: locator,
+        ...(options.templatePath ? { path: options.templatePath } : {}),
+      };
+    }
+    return {
+      type,
+      url: locator,
+      path: options.templatePath ?? ".knitto",
+      ...(options.ref ? { ref: options.ref } : {}),
+    };
   }
   if (options.type === "local") {
     return { type: "local", path: options.source };
@@ -433,6 +467,77 @@ program
   });
 
 const source = program.command("source").description("Inspect template sources");
+source
+  .command("set")
+  .description("attach an existing project to a template source")
+  .argument("<locator>", "template directory or URL")
+  .argument("[project]", "project directory", ".")
+  .option("--type <type>", "source type; inferred when omitted", sourceType)
+  .option("--template-path <path>", "template path within the source")
+  .option("--ref <ref>", "Git ref; released templates select their tag")
+  .action(
+    async (
+      locator,
+      project,
+      options: {
+        type?: SourceConfig["type"];
+        templatePath?: string;
+        ref?: string;
+      },
+    ) => {
+      const root = projectPath(project);
+      const initialSource = sourceFromLocator(locator, options);
+      let snapshot = await resolveCurrentSnapshot(initialSource, root);
+      await validateTemplateSnapshot(snapshot);
+
+      let selectedSource = initialSource;
+      const releaseTag = templateReleaseTag(snapshot.manifest.release);
+      if (initialSource.type === "git" && releaseTag) {
+        if (options.ref && options.ref !== releaseTag) {
+          throw new KnittoError(
+            `Template release declares immutable tag ${releaseTag}`,
+            "TEMPLATE",
+          );
+        }
+        selectedSource = { ...initialSource, ref: releaseTag };
+        snapshot = await resolveCurrentSnapshot(selectedSource, root);
+        await validateTemplateSnapshot(snapshot);
+      }
+
+      const configExists = await access(path.join(root, CONFIG_FILE))
+        .then(() => true)
+        .catch(() => false);
+      const existing = configExists
+        ? await loadProjectConfig(root, { enforceEngine: false })
+        : undefined;
+      const config: ProjectConfig = {
+        ...(existing ?? {}),
+        source: selectedSource,
+        engine: snapshot.manifest.engine ?? {
+          package: KNITTO_PACKAGE,
+          version: KNITTO_VERSION,
+        },
+      };
+      if (configExists) {
+        await saveProjectConfig(root, config);
+      } else {
+        await writeProjectConfig(root, config);
+      }
+      await rm(path.join(root, LOCK_FILE), { force: true });
+      console.log(
+        `Set ${root} template source to ${
+          selectedSource.type === "local"
+            ? selectedSource.path
+            : selectedSource.url
+        }${
+          selectedSource.type === "git" && selectedSource.ref
+            ? ` at ${selectedSource.ref}`
+            : ""
+        }`,
+      );
+    },
+  );
+
 source
   .command("pin")
   .description("pin a Git template release and its required Knitto engine")

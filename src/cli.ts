@@ -153,39 +153,6 @@ function configuredSource(options: {
     );
   }
 
-  function sourceFromLocator(
-    locator: string,
-    options: {
-      type?: SourceConfig["type"];
-      templatePath?: string;
-      ref?: string;
-    },
-  ): SourceConfig {
-    const type =
-      options.type ??
-      (locator.startsWith("git@") ||
-      locator.startsWith("ssh://") ||
-      locator.endsWith(".git") ||
-      /^https?:\/\/github\.com\//.test(locator)
-        ? "git"
-        : /^https?:\/\//.test(locator)
-          ? "http"
-          : "local");
-    if (type === "local") return { type, path: locator };
-    if (type === "http") {
-      return {
-        type,
-        url: locator,
-        ...(options.templatePath ? { path: options.templatePath } : {}),
-      };
-    }
-    return {
-      type,
-      url: locator,
-      path: options.templatePath ?? ".knitto",
-      ...(options.ref ? { ref: options.ref } : {}),
-    };
-  }
   if (options.type === "local") {
     return { type: "local", path: options.source };
   }
@@ -200,6 +167,40 @@ function configuredSource(options: {
     type: "git",
     url: options.source,
     ...(options.templatePath ? { path: options.templatePath } : {}),
+    ...(options.ref ? { ref: options.ref } : {}),
+  };
+}
+
+function sourceFromLocator(
+  locator: string,
+  options: {
+    type?: SourceConfig["type"];
+    templatePath?: string;
+    ref?: string;
+  },
+): SourceConfig {
+  const type =
+    options.type ??
+    (locator.startsWith("git@") ||
+    locator.startsWith("ssh://") ||
+    locator.endsWith(".git") ||
+    /^https?:\/\/github\.com\//.test(locator)
+      ? "git"
+      : /^https?:\/\//.test(locator)
+        ? "http"
+        : "local");
+  if (type === "local") return { type, path: locator };
+  if (type === "http") {
+    return {
+      type,
+      url: locator,
+      ...(options.templatePath ? { path: options.templatePath } : {}),
+    };
+  }
+  return {
+    type,
+    url: locator,
+    path: options.templatePath ?? ".knitto",
     ...(options.ref ? { ref: options.ref } : {}),
   };
 }

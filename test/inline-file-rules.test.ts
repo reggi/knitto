@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import test from "node:test";
-import { readFile, rm } from "node:fs/promises";
+import { mkdir, readFile, rm } from "node:fs/promises";
 import { createPlan } from "../src/engine/plan.js";
 import { applyPlan } from "../src/engine/apply.js";
 import { resolveCurrentSnapshot } from "../src/sources/resolve.js";
@@ -90,6 +90,7 @@ test("repository source rules capture a root file in Git snapshots", async () =>
         ref: "HEAD",
       },
     };
+    await mkdir(project, { recursive: true });
     const snapshot = await resolveCurrentSnapshot(config.source, project);
     const plan = await createPlan(project, config, snapshot);
     await applyPlan(plan);

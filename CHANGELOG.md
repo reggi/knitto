@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/reggi/knitto/compare/v0.1.0...v0.2.0) (2026-09-05)
+
+
+### Features
+
+* add lowercase version flag ([d39b6d6](https://github.com/reggi/knitto/commit/d39b6d62d1596fb9c2ba8b9134e99f3634b2bb84))
+* support literal repository file sources ([6d62de7](https://github.com/reggi/knitto/commit/6d62de777b8aab406155fa35c610b255565e6bc7))
+
+
+### Bug Fixes
+
+* allow newer compatible engines ([5a331e8](https://github.com/reggi/knitto/commit/5a331e863ac5eb0d0740dc5e424a9c42899653a0))
+
 ## [0.1.0](https://github.com/reggi/knitto/compare/v0.0.1...v0.1.0) (2026-09-05)
 
 

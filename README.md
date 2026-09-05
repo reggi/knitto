@@ -746,8 +746,9 @@ knitto source trust ./project
 
 The first public version is `0.0.1`. Release Please manages version updates,
 `CHANGELOG.md`, release pull requests, and tags from Conventional Commits on
-`main`. When a release is created, the workflow builds and publishes the same
-exact version as the public `knitto` npm package.
+`main`. When a release is created, the workflow builds that exact version,
+stages it through npm, and leaves final publication behind npm's human 2FA
+approval boundary.
 
 The workflow uses `GITHUB_TOKEN` by default. Set a `RELEASE_PLEASE_TOKEN`
 repository secret to a fine-grained token with contents and pull-request write

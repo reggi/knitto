@@ -2,6 +2,10 @@
   "name": "knitto",
   "version": "0.0.1",
   "description": "Unix-first, template-aware filesystem reconciler",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reggi/knitto.git"
+  },
   "type": "module",
   "packageManager": "npm@12.0.2",
   "bin": {

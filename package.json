@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "npm@12.0.2",
   "bin": {
-    "knitto": "./dist/src/cli.js"
+    "knitto": "dist/src/cli.js"
   },
   "files": [
     "dist"

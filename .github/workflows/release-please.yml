@@ -41,14 +41,18 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
 
+      - name: Install npm 12
+        if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
+        run: |
+          npm install --global --prefix "$RUNNER_TEMP/npm12" npm@12.0.2
+          echo "$RUNNER_TEMP/npm12/bin" >> "$GITHUB_PATH"
+
       - name: Build package with npm 12
         if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
         run: |
-          npx --yes npm@12.0.2 ci
-          npx --yes npm@12.0.2 run build
+          npm ci
+          npm run build
 
-      - name: Stage package on npm
+      - name: Publish package on npm
         if: steps.release.outputs.release_created == 'true' || inputs.publish_ref != ''
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx --yes npm@12.0.2 stage publish --provenance --tag latest
+        run: npm publish --provenance --tag latest

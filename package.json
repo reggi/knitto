@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Unix-first, template-aware filesystem reconciler",
   "type": "module",
+  "packageManager": "npm@12.0.2",
   "bin": {
     "knitto": "./dist/src/cli.js"
   },

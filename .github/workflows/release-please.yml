@@ -35,6 +35,10 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
 
+      - name: Use npm 12
+        if: steps.release.outputs.release_created == 'true'
+        run: npm install --global npm@12.0.2
+
       - name: Build package
         if: steps.release.outputs.release_created == 'true'
         run: |

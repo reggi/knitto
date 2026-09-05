@@ -365,13 +365,29 @@ function validateRule(value: unknown): TemplateRule {
     };
   }
 
-  if (value.type === "file" && typeof value.template === "string") {
+  if (
+    value.type === "file" &&
+    [
+      typeof value.template === "string",
+      typeof value.source === "string",
+      typeof value.contents === "string",
+    ].filter(Boolean).length === 1
+  ) {
+    const fileSource =
+      typeof value.template === "string"
+        ? { template: value.template }
+        : typeof value.source === "string"
+          ? { source: value.source }
+          : { contents: value.contents as string };
     return {
       id: value.id,
       type: "file",
       destination: value.destination,
-      template: value.template,
+      ...fileSource,
       ...(typeof value.mode === "number" ? { mode: value.mode } : {}),
+      ...(typeof value.ifMissing === "boolean"
+        ? { ifMissing: value.ifMissing }
+        : {}),
       ...(typeof value.when === "string" ? { when: value.when } : {}),
       ...(value.scope === "root" ||
       value.scope === "workspace" ||
@@ -382,6 +398,13 @@ function validateRule(value: unknown): TemplateRule {
         ? { target: value.target }
         : {}),
     };
+  }
+
+  if (value.type === "file") {
+    throw new KnittoError(
+      `File rule ${value.id} must define exactly one of template, source, or contents`,
+      "TEMPLATE",
+    );
   }
 
   if (

@@ -105,6 +105,51 @@ The manifest defines stable rules and their ownership:
 
 A whole-file rule owns the complete destination. Structured parsers deeply merge rendered content by default. `exact` or an optional pointer allowlist narrows or strengthens ownership, while `{{remove}}` expresses property removal inside the template.
 
+Static whole-file rules can declare literal `contents` instead of creating an
+identical Handlebars asset:
+
+```json
+{
+  "id": "gitattributes",
+  "type": "file",
+  "destination": ".gitattributes",
+  "contents": "* text=auto\n"
+}
+```
+
+A file rule must define exactly one of `template`, `source`, or `contents`. Inline
+contents are literal and are not rendered as Handlebars. By default Knitto
+enforces the exact contents and overwrites drift. Set `ifMissing: true` to
+create the file when absent while preserving any existing file:
+
+```json
+{
+  "id": "env-example",
+  "type": "file",
+  "destination": ".env.example",
+  "contents": "",
+  "ifMissing": true
+}
+```
+
+For a file that already exists in the template repository, use `source` to
+make that repository file the literal source of truth:
+
+```json
+{
+  "id": "template-update-workflow",
+  "type": "file",
+  "source": ".github/workflows/update-template.yml",
+  "destination": ".github/workflows/update-template.yml"
+}
+```
+
+`source` is resolved from the fetched repository or archive root, not from the
+directory containing `template.json`. Knitto captures the file in the
+immutable snapshot and includes it in the snapshot digest, so consumers do not
+need access to the original checkout later. Repository-source content is
+copied literally without Handlebars rendering.
+
 Whole-file deletion is never inferred. A template must declare a `delete` rule to remove a file.
 
 ## Handlebars Context
@@ -765,13 +810,13 @@ knitto source trust ./project
 The first public version is `0.0.1`. Release Please manages version updates,
 `CHANGELOG.md`, release pull requests, and tags from Conventional Commits on
 `main`. When a release is created, the workflow builds that exact version,
-stages it through npm, and leaves final publication behind npm's human 2FA
-approval boundary.
+then publishes it directly through npm trusted publishing with provenance and
+the `latest` distribution tag.
 
 The workflow uses `GITHUB_TOKEN` by default. Set a `RELEASE_PLEASE_TOKEN`
 repository secret to a fine-grained token with contents and pull-request write
 access when release pull requests must trigger other GitHub Actions workflows.
-Publishing requires npm trusted publishing or an `NPM_TOKEN` repository secret.
+Publishing requires the repository's npm trusted-publisher configuration.
 
 ## Testing
 

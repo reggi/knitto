@@ -12,6 +12,7 @@ import {
   renderTemplate,
   type TemplatePartial,
 } from "../context/render.js";
+import { repositoryAssetPath } from "../template/assets.js";
 import { prepareContent } from "../parsers/index.js";
 import { discoverProjectUnits } from "../project/discover.js";
 import { runChecks } from "../checks/run.js";
@@ -60,6 +61,15 @@ async function renderRule(
   context: Awaited<ReturnType<typeof buildContext>>,
   partials: TemplatePartial[],
 ): Promise<string> {
+  if (rule.type === "file" && "contents" in rule) {
+    return rule.contents;
+  }
+  if (rule.type === "file" && "source" in rule) {
+    return readFile(
+      resolveInside(snapshot.directory, repositoryAssetPath(rule.source)),
+      "utf8",
+    );
+  }
   const templatePath = resolveInside(snapshot.directory, rule.template);
   const template = await readFile(templatePath, "utf8");
   return renderTemplate(template, context, rule.template, partials);
@@ -269,6 +279,10 @@ export async function createPlan(
             beforeDigest: digest(current),
           });
         }
+        continue;
+      }
+
+      if (rule.type === "file" && rule.ifMissing && current !== null) {
         continue;
       }
 

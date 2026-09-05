@@ -84,11 +84,28 @@ interface BaseRule {
   target?: "project" | "root";
 }
 
-export interface FileRule extends BaseRule {
+interface FileRuleBase extends BaseRule {
   type: "file";
-  template: string;
   mode?: number;
+  ifMissing?: boolean;
 }
+
+export type FileRule =
+  | (FileRuleBase & {
+      template: string;
+      source?: never;
+      contents?: never;
+    })
+  | (FileRuleBase & {
+      source: string;
+      template?: never;
+      contents?: never;
+    })
+  | (FileRuleBase & {
+      contents: string;
+      template?: never;
+      source?: never;
+    });
 
 export interface JsonRule extends BaseRule {
   type: "json";

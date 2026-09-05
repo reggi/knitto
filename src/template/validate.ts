@@ -6,10 +6,11 @@ import {
   resolveInside,
 } from "../filesystem/paths.js";
 import type { Snapshot } from "../types.js";
+import { repositoryAssetPath } from "./assets.js";
 
 interface TemplateAsset {
   path: string;
-  kind: "file" | "schema" | "hook";
+  kind: "file" | "source" | "schema" | "hook";
   owner: string;
 }
 
@@ -36,7 +37,7 @@ async function validateAsset(
       "TEMPLATE",
     );
   }
-  if (asset.kind !== "hook") {
+  if (asset.kind === "file" || asset.kind === "schema") {
     try {
       Handlebars.parse(await readFile(file, "utf8"));
     } catch (error) {
@@ -68,11 +69,20 @@ export async function validateTemplateSnapshot(
 
   for (const rule of snapshot.manifest.rules) {
     if (rule.type === "delete") continue;
-    assets.push({
-      path: rule.template,
-      kind: "file",
-      owner: `rule ${rule.id}`,
-    });
+    if ("template" in rule && rule.template) {
+      assets.push({
+        path: rule.template,
+        kind: "file",
+        owner: `rule ${rule.id}`,
+      });
+    }
+    if (rule.type === "file" && "source" in rule) {
+      assets.push({
+        path: repositoryAssetPath(rule.source),
+        kind: "source",
+        owner: `rule ${rule.id}`,
+      });
+    }
     if ("schema" in rule && rule.schema) {
       assets.push({
         path: rule.schema,

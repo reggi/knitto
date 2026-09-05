@@ -1,10 +1,13 @@
 import path from "node:path";
 import os from "node:os";
 import {
+  copyFile,
+  cp,
   mkdir,
   mkdtemp,
   readFile,
   rm,
+  stat,
   writeFile,
 } from "node:fs/promises";
 import * as tar from "tar";
@@ -15,7 +18,10 @@ import {
   type SnapshotProvenance,
   type SourceConfig,
 } from "../types.js";
-import { resolveInside } from "../filesystem/paths.js";
+import {
+  assertNoEscapingSymlink,
+  resolveInside,
+} from "../filesystem/paths.js";
 import { loadTemplateManifest } from "../template/manifest.js";
 import {
   cacheSnapshot,
@@ -23,9 +29,14 @@ import {
   loadCachedSnapshot,
 } from "../snapshots/canonical.js";
 import { run } from "./process.js";
+import {
+  repositoryAssetDirectory,
+  repositoryAssetPath,
+} from "../template/assets.js";
 
 interface MaterializedSource {
   root: string;
+  repositoryRoot: string;
   provenance: SnapshotProvenance;
   cleanup?: () => Promise<void>;
 }
@@ -34,8 +45,17 @@ async function materializeLocal(
   source: Extract<SourceConfig, { type: "local" }>,
   projectRoot: string,
 ): Promise<MaterializedSource> {
+  const root = path.resolve(projectRoot, source.path);
+  const relative = path.relative(projectRoot, root);
   return {
-    root: path.resolve(projectRoot, source.path),
+    root,
+    repositoryRoot:
+      relative !== "" &&
+      relative !== ".." &&
+      !relative.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relative)
+        ? projectRoot
+        : root,
     provenance: {
       sourceType: "local",
       locator: source.path,
@@ -75,6 +95,7 @@ async function materializeHttp(
 
     return {
       root: source.path ? resolveInside(extracted, source.path) : extracted,
+      repositoryRoot: extracted,
       provenance: {
         sourceType: "http",
         locator: source.url,
@@ -115,6 +136,7 @@ async function materializeGit(
 
     return {
       root: source.path ? resolveInside(checkout, source.path) : checkout,
+      repositoryRoot: checkout,
       provenance: {
         sourceType: "git",
         locator: source.url,
@@ -150,10 +172,42 @@ async function materialize(
 async function snapshotMaterialized(
   materialized: MaterializedSource,
 ): Promise<Snapshot> {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "knitto-snapshot-"));
+  const snapshotRoot = path.join(temporary, "template");
   try {
     const manifest = await loadTemplateManifest(materialized.root);
-    const digest = await digestDirectory(materialized.root);
-    const directory = await cacheSnapshot(materialized.root, digest);
+    await cp(materialized.root, snapshotRoot, { recursive: true });
+    const assetDirectory = resolveInside(
+      snapshotRoot,
+      repositoryAssetDirectory(),
+    );
+    await rm(assetDirectory, { recursive: true, force: true });
+    for (const rule of manifest.rules) {
+      if (rule.type !== "file" || !("source" in rule)) continue;
+      const source = resolveInside(materialized.repositoryRoot, rule.source);
+      await assertNoEscapingSymlink(materialized.repositoryRoot, source);
+      const metadata = await stat(source).catch((error: unknown) => {
+        throw new KnittoError(
+          `Repository source for rule ${rule.id} does not exist: ${rule.source}`,
+          "TEMPLATE",
+          { cause: error },
+        );
+      });
+      if (!metadata.isFile()) {
+        throw new KnittoError(
+          `Repository source for rule ${rule.id} is not a file: ${rule.source}`,
+          "TEMPLATE",
+        );
+      }
+      const destination = resolveInside(
+        snapshotRoot,
+        repositoryAssetPath(rule.source),
+      );
+      await mkdir(path.dirname(destination), { recursive: true });
+      await copyFile(source, destination);
+    }
+    const digest = await digestDirectory(snapshotRoot);
+    const directory = await cacheSnapshot(snapshotRoot, digest);
     return {
       digest,
       directory,
@@ -166,6 +220,7 @@ async function snapshotMaterialized(
       cause: error,
     });
   } finally {
+    await rm(temporary, { recursive: true, force: true });
     await materialized.cleanup?.();
   }
 }
